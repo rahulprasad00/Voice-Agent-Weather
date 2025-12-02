@@ -180,6 +180,7 @@ const VoiceAgent = () => {
         const responseMetric =
           (data?.metric as 'temperature' | 'rain' | 'humidity' | 'wind' | 'general') || metric;
 
+        // Prefer server-crafted message; otherwise build a metric-aware fallback.
         if (data.error) {
           speakText(data.error);
         } else if (data.message) {
@@ -191,11 +192,13 @@ const VoiceAgent = () => {
           let response: string | null = null;
 
           if (responseMetric === 'wind') {
+            // Wind: speak speed if present, otherwise fall back to a generic condition.
             response = data.windSpeed != null
               ? `The wind in ${fallbackCity} is blowing at ${data.windSpeed} meters per second.`
               : `I couldn't find wind information for ${fallbackCity}, but conditions are ${fallbackDescription}.`;
           } else if (responseMetric === 'rain') {
             if (data.rainChance != null) {
+              // Rain: include probability and optional volume.
               const volumeText = data.rainVolume
                 ? ` with about ${data.rainVolume} millimeters expected`
                 : '';
@@ -206,10 +209,12 @@ const VoiceAgent = () => {
               response = `I don't have a rain probability for ${fallbackCity}, but conditions are ${fallbackDescription}.`;
             }
           } else if (responseMetric === 'humidity') {
+            // Humidity: report percentage or fall back.
             response = data.humidity != null
               ? `The humidity in ${fallbackCity} is ${data.humidity} percent.`
               : `I couldn't find humidity data for ${fallbackCity}, but conditions are ${fallbackDescription}.`;
           } else {
+            // Default general/temperature response.
             response = `The weather in ${fallbackCity} is currently ${data.temperature} degrees Celsius and ${fallbackDescription}. It feels like ${data.feelsLike} degrees.`;
           }
 
